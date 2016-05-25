@@ -4,19 +4,26 @@
 # and push them into the registry. Intended to be run following
 # docker_load.sh
 
-SOURCE_REGISTRY=registry.access.redhat.com
-DESTINATION_REGISTRY=ose-registry.example.com
+export SCRIPT_DIR=$(dirname $(realpath $0))
+source ${SCRIPT_DIR}/settings.sh
 
-IMAGES=$(docker images | awk -v SRC="${SOURCE_REGISTRY}" '$0 ~ SRC {printf "%s:%s\n",$1,$2}')
+IMAGES=$(docker images | grep redhat | awk '{print $1}')
+for i in ${IMAGES[@]}; do
+	echo "image: $i"
+done
+exit
+
 
 for i in ${IMAGES[@]}; 
 do 
+  IMAGEID=$(docker inspect --format='{{.Id}}' $i)
+  VERSION='latest'
   IMAGE=$(echo ${i} |  cut -d\/ -f 2-3)
-  TAGNAME=${DESTINATION_REGISTRY}/${IMAGE}
+  TAGNAME=$REGISTRY/$IMAGE:$VERSION
 
-  echo docker tag ${i} $TAGNAME
-  #docker tag ${i} $TAGNAME
+  echo docker tag $IMAGEID $TAGNAME
+  docker tag $IMAGEID $TAGNAME
   echo docker push $TAGNAME
-  #docker push $TAGNAME
+  docker push $TAGNAME
 done;
 
