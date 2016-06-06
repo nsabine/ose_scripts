@@ -7,13 +7,13 @@
 export SCRIPT_DIR=$(dirname $(realpath $0))
 source ${SCRIPT_DIR}/settings.sh
 
-for line in $(docker images | grep $ORIGINAL_REGISTRY)
+for line in $(docker images | grep $OLD_REGISTRY)
 do
   IMAGE=$(echo $line | awk '{print $1}')
   VERS=$(echo $line | awk '{print $2}')
   HASH=$(echo $line | awk '{print $3}')
 
-  NEW_TAG=$(echo $IMAGE | sed s/${ORIGINAL_REGISTRY}/${REGISTRY}/)
+  NEW_TAG=$(echo $IMAGE | sed s/${OLD_REGISTRY}/${REGISTRY}/)
 
   # tag new registry server
   docker tag -f $HASH $NEW_TAG:$VERS
