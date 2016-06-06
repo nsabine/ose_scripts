@@ -2,6 +2,7 @@
 
 SCRIPT_DIR=$(dirname $(realpath $0))
 
+OLD_REGISTRY=registry.access.redhat.com
 REGISTRY=ose-registry.example.com
 
 STORAGE=/export/ose_iso
