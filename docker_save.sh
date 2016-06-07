@@ -18,7 +18,7 @@ do
     ((TRIES++))
   done
   
-  VERSIONSTRING=$(docker images | grep pod | awk '{print $1 ":" $2}'| sort | uniq)
+  VERSIONSTRING=$(docker images | grep $r | awk '{print $1 ":" $2}'| sort | uniq)
 
   echo sudo docker save -o ${IMAGE_STORAGE}/${r}.tar $VERSIONSTRING
   sudo docker save -o ${IMAGE_STORAGE}/${r}.tar $VERSIONSTRING
