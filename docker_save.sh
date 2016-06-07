@@ -3,9 +3,7 @@
 export SCRIPT_DIR=$(dirname $(realpath $0))
 source ${SCRIPT_DIR}/settings.sh
 
-#repos=$(${SCRIPT_DIR}/docker_list_images.py | egrep -v "beta|rhcloud")
-#repos=$( docker images | awk '{print $1}' | sort -u | grep redhat.com)
-repos=$(${SCRIPT_DIR}/docker_list_images.py | egrep  '^rhel|^openshift3')
+repos=$(${SCRIPT_DIR}/docker_list_images.py | egrep  '^rhel|^openshift3|^rhscl/')
 
 for r in $repos;
 do
@@ -19,16 +17,14 @@ do
     CLEANEXIT=$?
     ((TRIES++))
   done
-  IMAGEID=$(docker images | grep ${r} | head -n 1 | awk '{print $3}')
-  VERSIONS=$(docker images | grep ${IMAGEID} | awk '{print $2}')
-  VERSIONSTRING=""
-  for v in ${VERSIONS};
-  do
-    VERSIONSTRING="${VERSIONSTRING} ${r}:${v}"
-  done
-  echo "VERSION STRING: ${VERSIONSTRING}"
+  
+  VERSIONSTRING=$(docker images | grep pod | awk '{print $1 ":" $2}'| sort | uniq)
 
-  sudo docker save -o ${IMAGE_STORAGE}/${r}.tar ${VERSIONSTRING}
-  sudo rm ${IMAGE_STORAGE}/${r}.tar.gz
+  echo sudo docker save -o ${IMAGE_STORAGE}/${r}.tar $VERSIONSTRING
+  sudo docker save -o ${IMAGE_STORAGE}/${r}.tar $VERSIONSTRING
+  sudo rm -f ${IMAGE_STORAGE}/${r}.tar.gz
   sudo gzip ${IMAGE_STORAGE}/${r}.tar
+  underscore=$(echo ${r} | sed s^/^_^g)
+  curl -k -f -v -T ${IMAGE_STORAGE}/${r}.tar.gz https://10.0.93.8/file/satelite6/${underscore}.tar.gz
+
 done

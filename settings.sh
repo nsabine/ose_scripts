@@ -5,7 +5,7 @@ SCRIPT_DIR=$(dirname $(realpath $0))
 OLD_REGISTRY=registry.access.redhat.com
 REGISTRY=ose-registry.example.com
 
-STORAGE=/export/ose_iso
+STORAGE=/var/lib/pulp/exports/docker
 REPO_STORAGE=${STORAGE}/repos
 REPO_STORAGE_TARS=${STORAGE}/repo_tars
 IMAGE_STORAGE=${STORAGE}/images
