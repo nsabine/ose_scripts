@@ -7,23 +7,26 @@
 export SCRIPT_DIR=$(dirname $(realpath $0))
 source ${SCRIPT_DIR}/settings.sh
 
-IMAGES=$(docker images | grep redhat | awk '{print $1}')
-for i in ${IMAGES[@]}; do
-	echo "image: $i"
+for line in $(docker images | grep $OLD_REGISTRY)
+do
+  IMAGE=$(echo $line | awk '{print $1}')
+  VERS=$(echo $line | awk '{print $2}')
+  HASH=$(echo $line | awk '{print $3}')
+
+  NEW_TAG=$(echo $IMAGE | sed s/${OLD_REGISTRY}/${REGISTRY}/)
+
+  # tag new registry server
+  docker tag -f $HASH $NEW_TAG:$VERS
+
+  # push to registry, retry if any errors
+  RET=1
+  while [ $RET -ne 0 ]
+  do
+    docker push $NEW_TAG:$VERS
+    RET=$?
+  done
+
+  # finally, remove existing tag
+  docker rmi $IMAGE:$VERS
+
 done
-exit
-
-
-for i in ${IMAGES[@]}; 
-do 
-  IMAGEID=$(docker inspect --format='{{.Id}}' $i)
-  VERSION='latest'
-  IMAGE=$(echo ${i} |  cut -d\/ -f 2-3)
-  TAGNAME=$REGISTRY/$IMAGE:$VERSION
-
-  echo docker tag $IMAGEID $TAGNAME
-  docker tag $IMAGEID $TAGNAME
-  echo docker push $TAGNAME
-  docker push $TAGNAME
-done;
-
